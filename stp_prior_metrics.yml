@@ -1,0 +1,13 @@
+# Keys sourced from IEX
+Tenquant:
+  - AssetsCurrent: currentassets
+  - CommonStockDividendsPerShareDeclared: dividendpayments
+  - GrossProfit: grossprofit
+  - InterestExpense: interestanddebtexpense
+  - LiabilitiesCurrent: currentliabilities
+  - NetCashProvidedByUsedInOperatingActivities: netcashflowsoperating
+  - NetIncomeLoss: netincomeloss
+  - OperatingIncomeLoss: operatingincomeloss
+  - RevenueFromContractWithCustomerExcludingAssessedTax: revenues
+  - StockholdersEquity: equity
+  - WeightedAverageNumberOfDilutedSharesOutstanding: sharesoutstanding
