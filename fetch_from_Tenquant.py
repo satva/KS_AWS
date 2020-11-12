@@ -2,11 +2,29 @@ import requests
 import datetime
 import time
 import boto3
+import json
+import yaml
 
 URL = "https://api.tenquant.io/historical"
 key = "eWFqdmFuZUBnbWFpbC5jb20="
 request_url_params = {}
 test_response_json = "{'assets': 1602827000.0, 'bookvalue': 1014025000.0,'comprehensiveincome': -103033000.0,'comprehensiveincomeattributabletononcontrollinginterest': 0.0,'comprehensiveincomeattributabletoparent': -103033000.0, 'costofrevenue':184465000.0, 'country': 'United States', 'currencycode': 'USD','currentassets': 588002000.0, 'currentliabilities': 90181000.0, 'date':'2019-12-31', 'dividendpayments': 0.0, 'dividendyield': 0.0,'documenttype': '10-K', 'duration': 4, 'equity': 1014025000.0,'exchangegainslosses': 0.0, 'extraordaryitemsgainloss': 0.0, 'grossprofit':-264907000.0, 'incomebeforeequitymethodinvestments': -98864000.0,'incomefromcontinuingoperationsaftertax': -98864000.0,'incomefromcontinuingoperationsbeforetax': -109455000.0,'incomefromequitymethodinvestments': 0.0, 'incometaxexpensebenefit':-10591000.0, 'interestanddebtexpense': 0.0, 'liabilities': 588802000.0,'liabilitiesandequity': 1602827000.0, 'marketcap': 8502960469,'netcashflow': 89976000.0, 'netcashflowsfinancing': 35094000.0,'netcashflowsinvesting': 25013000.0, 'netcashflowsoperating': 29869000.0,'netincomeattributabletononcontrollinginterest': 0.0,'netincomeattributabletoparent': -98864000.0,'netincomeavailabletocommonstockholdersbasic': -98864000.0,'netincomeloss': -98864000.0, 'noncurrentassets': 1014825000.0,'noncurrentliabilities': 498621000.0, 'nonoperatingincomeloss': 0.0,'operatingexpenses': -184465000.0, 'operatingincomeloss': -80442000.0,'othercomprehensiveincome': 4169000.0, 'otheroperatingincome': 0.0, 'pb':8.385355853159439, 'pe': -86.00664012178346, 'preferredstock': 0.0,'preferredstockdividendsandotheradjustments': 0.0, 'price':116.86000061035156, 'revenues': -80442000.0, 'sector': None,'sharesoutstanding': 72761941.0}"
+
+
+def process_data_before_upload(data):
+    #print(data)
+    #print("*************")
+    with open('stp_prior_metrics.yml') as stream:
+        # The FullLoader parameter handles the conversion from YAML scalar values to Python the dictionary format
+        normalized_data = yaml.full_load(stream)
+        #print(normalized_data['Tenquant'])
+        dicta = {k:v for d in normalized_data['Tenquant'] for k, v in d.items()}
+        for k,v in dicta.items():
+            if v in data.keys():
+                data[k] = data.pop(v)
+    #print("**************")
+    #print(data)
+    return(data)
 
 def s3_upload(ticker,year,response_json):
     bucket_name = "tenquant-raw"
@@ -39,7 +57,9 @@ def callTenquantAPI(no_of_years,ticker,year,month,date):
                 break
             elif(data["documenttype"] == "10-K"):
                 print(response.json())
-                s3_upload(ticker,year,str(response.json()))
+                processed_data = process_data_before_upload(data)
+                #s3_upload(ticker,year,str(response.json()))
+                s3_upload(ticker,year,str(processed_data))
                 break
             else:
                 continue
@@ -47,6 +67,8 @@ def callTenquantAPI(no_of_years,ticker,year,month,date):
 
 
 if __name__ == "__main__":
-    callTenquantAPI(5,"tdoc",2020,2,15)
-    #s3_upload()
+    callTenquantAPI(2,"tdoc",2020,2,25)
+    #print(test_response_json)
+    #process_data_before_upload(test_response_json)
+    #s3_upload("tdoc",2019,test_response_json)
 
